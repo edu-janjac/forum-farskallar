@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h2>User profile</h2>
+    <div>Logged in: {{ session['name'] }}
+        <a href="{{url_for('logout')}}">Logout</a>
+    </div>
+    <div>
+        <h2>Welcome to your user page</h2>
+    </div>
+</body>
+</html>

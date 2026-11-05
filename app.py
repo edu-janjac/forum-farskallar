@@ -1,43 +1,50 @@
-from flask import Flask, request, render_template_string, jsonify
+#
 
-import json, os
+from flask import *
+from flask_mysqldb import MySQL
+import MySQLdb.cursors
+import re
+
 app = Flask(__name__)
-JSON_FILE = 'data.json'
+app.secret_key = 'very_secret_key'
 
-HTML = '''
-    <body>
-        <form method="POST" action="/write-json">
-        <label for="user">User:</label>
-        <input type="text" name="user" id="user" required>
-        <label for"passwd">Password:</label>
-        <input type="password" name="passwd" id="passwd" required>
-        <button type="submit">Login</button>
-    </body>
-'''
+app.config['MYSQL_HOST'] = 'localhost'
+app.config['MYSQL_USER'] = 'root'
+app.config['MYSQL_PASSWORD'] = ''
+app.config['MYSQL_DB'] = 'user_table'
 
-def load_posts():
-    if not os.path.exists(JSON_FILE):
-        return []
-    try:
-        with open(JSON_FILE, 'r') as f:
-            return json.load(f)
-    except Exception:
-        return []
-
+mysql = MySQL(app)
 
 @app.route('/')
-def json_demo():
-    return render_template_string(HTML)
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    message = ''
+    if request.method == 'POST' and 'email' in request.form and 'password' in request.form:
+        email = request.email['email']
+        password = request.form['password']
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('SELECT * FROM user WHERE email = % s AND password = % s', (email, password, ))
+        user = cursor.fetchone()
+        
+        if user:
+            session['loggedin'] = True
+            session['userid'] = user['userid']
+            session['name'] = user['name']
+            session['email'] = user['email']
+            return render_template('user.html', message=message)
 
-@app.route('/write-json', methods=['POST'])
-def write_json():
-    posts = load_posts()
-    posts.append({
-        'user': request.form.get('user'),
-        'passwd': request.form.get('passwd')
-    })
-    with open(JSON_FILE, 'w', encoding='utf-8') as f:
-        json.dump(posts, f, indent=4, ensure_ascii=False)
-    return render_template_string(HTML)
+        else:
+            message = 'Please enter correct email / password'
+    return render_template('login.html', message=message)
 
-app.run(debug=True)
+@app.route('/logout')
+def logout():
+    session.pop('loggedin', None)
+    session.pop('userid', None)
+    session.pop('email', None)
+    session.pop('name', None)
+    return redirect(url_for('login'))
+
+
+
+app.run(debug=True) 
