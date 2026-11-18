@@ -41,7 +41,7 @@ def login():
         password = request.form['password']
         # använder cursor för att hämta user från databasen med dens email och password
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        cursor.execute('SELECT * FROM user WHERE email = % s AND password = % s', (email, password, ))
+        cursor.execute('SELECT * FROM user WHERE email = %s AND password = %s', (email, password, ))
         user = cursor.fetchone()
         # om user finns, spara user info i session och render user.html med message
         if user:
@@ -73,7 +73,7 @@ def register():
         password = request.form['password']
         email = request.form['email']
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        cursor.execute('SELECT * FROM user WHERE email = % s',(email, ))
+        cursor.execute('SELECT * FROM user WHERE email = %s',(email, ))
         account = cursor.fetchone()
         if account:
             message = 'Account already exists'
@@ -85,7 +85,7 @@ def register():
             message = 'Please fill out the form'
         
         else:
-            cursor.execute('INSERT INTO user VALUES (NULL, % s, % s, % s)', (userName, email, password))
+            cursor.execute('INSERT INTO user VALUES (NULL, %s, %s, %s)', (userName, email, password))
             mysql.connection.commit()
             message = 'You have succesfully registred'
     
